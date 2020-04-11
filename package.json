@@ -1,0 +1,47 @@
+{
+    "name": "tsed-starter",
+    "version": "0.0.1",
+    "description": "",
+    "scripts": {
+        "build": "npm run tslint && npm run tsc && npm run copy-static-assets",
+        "start:prod": "NODE_ENV=production node dist/server.js",
+        "start": "ts-node src/server.ts",
+        "tsc": "tsc --project tsconfig.json",
+        "tsc:w": "tsc --project tsconfig.json -w",
+        "dev": "npm run start:dev",
+        "start:dev": "nodemon --watch 'src/**/*.ts' --ignore 'node_modules/**/*' --exec ts-node src/server.ts",
+        "test": "jest --forceExit --coverage --verbose",
+        "tslint": "tslint -c tslint.json -p tsconfig.json",
+        "copy-static-assets": "node copyStaticAssets.js"
+    },
+    "keywords": [],
+    "author": "WayJam So",
+    "license": "MIT",
+    "dependencies": {
+        "@tsed/common": "^5.44.17",
+        "@tsed/core": "^5.44.17",
+        "@tsed/di": "^5.44.17",
+        "@tsed/swagger": "^5.44.17",
+        "@tsed/typeorm": "^5.44.17",
+        "@types/shelljs": "^0.8.5",
+        "dotenv": "^8.0.0",
+        "express": "^4.17.1",
+        "module-alias": "^2.2.0",
+        "mongodb": "^3.3.2",
+        "mysql": "^2.17.1",
+        "ts-log-debug": "^5.1.0"
+    },
+    "devDependencies": {
+        "@types/dotenv": "^6.1.1",
+        "@types/express": "^4.16.1",
+        "@types/node": "^12.0.2",
+        "@types/swagger-schema-official": "^2.0.18",
+        "nodemon": "^1.19.1",
+        "shelljs": "^0.8.3",
+        "ts-node": "^8.3.0",
+        "tslint": "^5.16.0",
+        "tslint-config-prettier": "^1.18.0",
+        "tslint-config-standard": "^8.0.1",
+        "typescript": "^3.4.5"
+    }
+}
