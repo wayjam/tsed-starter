@@ -1,7 +1,8 @@
-import * as dotenv from 'dotenv';
 import { IModuleOptions } from '@tsed/di';
-import { ConnectionOptions } from 'typeorm';
+import * as dotenv from 'dotenv';
 import * as Path from 'path';
+import { ConnectionOptions } from 'typeorm';
+
 import * as Definition from './definition';
 
 export interface IConfig extends Partial<IModuleOptions> {
@@ -9,20 +10,20 @@ export interface IConfig extends Partial<IModuleOptions> {
   port: number;
   podIp?: string;
   podName?: string;
+  extra?: any;
 }
 
 function getEntities(dbName: string, dbType: string) {
-  let tables: any[];
   if (dbType === 'mysql') {
-    tables = Definition.modelMapping[dbName];
+    return Definition.modelMapping[dbName];
   }
   if (dbType === 'mongo') {
-    tables = Definition.mongoModelMapping[dbName];
+    return Definition.mongoModelMapping[dbName];
   }
-  return tables || [];
+  return [];
 }
 
-function genMySqlConfig({ debug, host, port, username, password, dbs }: any): ConnectionOptions[] {
+function genMySQLConfig({ debug, host, port, username, password, dbs }: any): ConnectionOptions[] {
   if (process.env.MYSQL_DB && process.env.MYSQL_DB.length > 0) {
     return (dbs as string)
       .split(',')
@@ -46,7 +47,7 @@ function genMySqlConfig({ debug, host, port, username, password, dbs }: any): Co
   }
 }
 
-function getMongoConfig({ debug, host, port, username, password, dbs }: any): ConnectionOptions[] {
+function genMongoConfig({ debug, host, port, username, password, dbs }: any): ConnectionOptions[] {
   if (process.env.MONGO_DB && process.env.MONGO_DB.length > 0) {
     return (dbs as string)
       .split(',')
@@ -73,16 +74,20 @@ function getMongoConfig({ debug, host, port, username, password, dbs }: any): Co
   }
 }
 
-export function NewConfig(): IConfig {
+export function NewConfig(envPrefix?: string): IConfig {
   // load .env
-  dotenv.config();
+  const result = dotenv.config();
+  if (result.error) {
+    throw result.error;
+  }
+
   const debug = process.env.NODE_ENV !== 'production';
   const rootDir = Path.resolve(__dirname);
   let httpsPort: number | boolean | string = false;
   if (process.env.HTTPS_PORT) {
     httpsPort = process.env.HTTPS_PORT === 'false' ? false : process.env.HTTPS_PORT;
   }
-  const mysqlTypeorm: ConnectionOptions[] = genMySqlConfig({
+  const mysqlTypeorm: ConnectionOptions[] = genMySQLConfig({
     host: process.env.MYSQL_HOST,
     port: process.env.MYSQL_PORT,
     username: process.env.MYSQL_USER,
@@ -90,7 +95,7 @@ export function NewConfig(): IConfig {
     debug,
     dbs: process.env.MYSQL_DB
   });
-  const mongoTypeorm: ConnectionOptions[] = getMongoConfig({
+  const mongoTypeorm: ConnectionOptions[] = genMongoConfig({
     host: process.env.MONGO_HOST,
     port: process.env.MONGO_PORT,
     username: process.env.MONGO_USER,
@@ -111,16 +116,24 @@ export function NewConfig(): IConfig {
     httpsPort,
     podIp: process.env.POD_IP, // for k8s
     podName: process.env.POD_NAME,
-    port: Number.parseInt(process.env.PORT || '80', 10)
+    port: Number.parseInt(process.env.PORT || '80', 10),
+    extra: {}
   };
+
   if (debug) {
-    cfg.swagger = {
-      path: '/api-docs'
-    };
+    cfg.swagger = { path: '/api-docs' };
   }
+
   if (process.env.IGNORE_DBCONN === 'true') {
     cfg.typeorm = [];
   }
+
+  if (envPrefix) {
+    cfg.extra = Object.keys(result.parsed)
+      .filter(key => key.startsWith(`${envPrefix}_`))
+      .map(key => result.parsed[key]);
+  }
+
   cfg.logger = {
     debug,
     logRequest: debug,

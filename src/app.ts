@@ -8,7 +8,7 @@ if (process.env.NODE_ENV !== 'production') {
   require('@tsed/swagger');
 }
 
-const config = NewConfig();
+const config = NewConfig(process.env.ENV_PREFIX || 'STARTER');
 
 @ServerSettings(config)
 export class Application extends ServerLoader {

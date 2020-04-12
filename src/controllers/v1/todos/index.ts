@@ -13,7 +13,7 @@ import {
 import { Summary, Description, Returns, ReturnsArray } from '@tsed/swagger';
 import { Todo } from '@/models/todos';
 import { TodoService } from '@/services/todos';
-
+import { NotFound } from 'ts-httpexceptions';
 @Controller({
   path: '/todos',
   children: []
@@ -40,7 +40,11 @@ export class TodosCtrl {
   @Summary('Get a todo')
   @Returns(Todo)
   public async get(@PathParams('id') id: number): Promise<Todo> {
-    return this.todoSvc.lookup(id);
+    const todo = await this.todoSvc.lookup(id);
+    if (todo) {
+      return todo;
+    }
+    throw new NotFound('Todo not found');
   }
 
   @Post('/')
@@ -61,11 +65,11 @@ export class TodosCtrl {
   public async update(
     @PathParams('id') id: number,
     @BodyParams('content') content: string,
-    @BodyParams('is_finished') isFinished: boolean
+    @BodyParams('finished') finished: boolean
   ) {
     const todo: Todo = await this.todoSvc.lookup(id);
     todo.content = content;
-    todo.finished = isFinished;
+    todo.finished = finished;
     await this.todoSvc.update(todo);
   }
 

@@ -39,7 +39,7 @@ interface IModelDBMapping {
 }
 
 const modelMapping: IModelDBMapping = {
-  todo_service: [Todo]
+  'todo_service': [Todo]
 };
 
 const mongoModelMapping: IModelDBMapping = {};

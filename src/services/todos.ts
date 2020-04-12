@@ -11,7 +11,7 @@ export class TodoService {
   constructor(private typeORMService: TypeORMService) {}
 
   public $afterRoutesInit() {
-    this.connection = this.typeORMService.get('todo_service');
+    this.connection = this.typeORMService.get('mysql-todo_service');
   }
 
   public async lookup(id: number): Promise<Todo> {
